@@ -38,7 +38,7 @@ def process_refund_data(refund_file, qwt_file, returns_file, bulk_rto_file, safe
             else:
                 return pd.read_excel(file)
         # Load Refund Data
-        Refund_data = pd.read_any_file(refund_file)
+        Refund_data = read_any_file(refund_file)
         
         # Filter only Refund type
         TYPE_COL = [c for c in Refund_data.columns if c.strip().lower() == "type"][0]
@@ -61,7 +61,7 @@ def process_refund_data(refund_file, qwt_file, returns_file, bulk_rto_file, safe
         Refund_data['Date_Diff'] = (pd.to_datetime(Refund_data['Today']) - pd.to_datetime(Refund_data['Date1'])).dt.days
         
         # Load QWT and perform Door Ship lookup
-        qwt = pd.read_any_file(qwt_file)
+        qwt = read_any_file(qwt_file)
         Refund_data["__key"] = Refund_data["order id"].astype(str).str.strip().str.upper()
         qwt_map = (
             qwt.assign(__key = qwt["Customer Order ID"].astype(str).str.strip().str.upper())
@@ -72,7 +72,7 @@ def process_refund_data(refund_file, qwt_file, returns_file, bulk_rto_file, safe
         Refund_data.drop(columns="__key", inplace=True)
         
         # Load Returns and perform FBA Return lookup
-        returns = pd.read_any_file(returns_file)
+        returns = read_any_file(returns_file)
         Refund_data.loc[:, "__key"] = Refund_data["order id"].astype(str).str.strip().str.upper()
         returns.loc[:, "__key"] = returns["order-id"].astype(str).str.strip().str.upper()
         ret_map = (
@@ -84,7 +84,7 @@ def process_refund_data(refund_file, qwt_file, returns_file, bulk_rto_file, safe
         Refund_data.drop(columns="__key", inplace=True)
         
         # Load Bulk RTO and perform Seller Flex Return lookup
-        bulk_rto = pd.read_any_file(bulk_rto_file, sheet_name="All")
+        bulk_rto = read_any_file(bulk_rto_file, sheet_name="All")
         Refund_data["__key"] = Refund_data["Door Ship (Seller Flex)"].astype(str).str.strip().str.upper()
         bulk_rto["__key"] = bulk_rto["Order Id"].astype(str).str.strip().str.upper()
         right_key = bulk_rto[["__key", "Order Id"]].drop_duplicates()
@@ -93,7 +93,7 @@ def process_refund_data(refund_file, qwt_file, returns_file, bulk_rto_file, safe
         Refund_data.drop(columns="__key", inplace=True)
         
         # Load Safe-T Claim and perform lookup
-        safeT = pd.read_any_file(safe_t_file, sheet_name="Sheet1")
+        safeT = read_any_file(safe_t_file, sheet_name="Sheet1")
         lookup_col = safeT.columns[3]
         Refund_data.loc[:, "__key"] = Refund_data["Door Ship (Seller Flex)"].astype(str).str.strip().str.upper()
         safeT.loc[:, "__key"] = safeT[lookup_col].astype(str).str.strip().str.upper()
@@ -103,7 +103,7 @@ def process_refund_data(refund_file, qwt_file, returns_file, bulk_rto_file, safe
         Refund_data.drop(columns="__key", inplace=True)
         
         # Load Reimbursement and perform FBA Reimbursement lookup
-        reim = pd.read_any_file(reim_file)
+        reim = read_any_file(reim_file)
         filtered_reim = reim[reim["reason"].isin(["CustomerReturn", "CustomerServiceIssue"])].copy()
         Refund_data.loc[:, "__key"] = Refund_data["order id_x"].astype(str).str.strip().str.upper()
         filtered_reim.loc[:, "__key"] = filtered_reim["amazon-order-id"].astype(str).str.strip().str.upper()
@@ -277,4 +277,5 @@ else:
 # Footer
 st.markdown("---")
 st.markdown("*Developed for Amazon Seller Refund Analysis By IBI*")
+
 
